@@ -245,12 +245,12 @@ def serve_crm():
 
 @app.route("/<path:filename>")
 def serve_static(filename):
-    root_path = os.path.join(BASE_DIR, filename)
-    if os.path.isfile(root_path):
-        return send_from_directory(BASE_DIR, filename)
     web_path = os.path.join(WEB_DIR, filename)
     if os.path.isfile(web_path):
         return send_from_directory(WEB_DIR, filename)
+    root_path = os.path.join(BASE_DIR, filename)
+    if os.path.isfile(root_path):
+        return send_from_directory(BASE_DIR, filename)
     return jsonify({"error": "Archivo no encontrado"}), 404
 
 
