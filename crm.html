@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>PREMXCA | CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="stylesheet" href="/css/crm-dashboard.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/crm" aria-label="PREMXCA CRM">
+      <img src="/logoazul.jpeg" alt="" class="brand-logo" onerror="this.hidden=true" />
+      <span><small>CRM PREMSKA · VENTAS</small><strong>PREMXCA <b>CRM</b></strong></span>
+    </a>
+    <div class="topbar-right">
+      <span class="storage-status"><i></i><span id="storageBadge">Conectando…</span></span>
+      <button class="button button-muted" id="btnThemeToggle" type="button" aria-label="Cambiar a tema azul marino" aria-pressed="false"><i class="ph ph-moon"></i><span>Tema azul</span></button>
+      <a class="button button-muted" href="/" title="Ver sitio público"><i class="ph ph-arrow-square-out"></i><span>Web pública</span></a>
+      <button class="button button-primary" id="btnNewLead"><i class="ph ph-plus"></i> Nuevo prospecto</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="page-heading">
+      <div>
+        <p class="eyebrow">PANEL DE VENTAS</p>
+        <h1>Oportunidades</h1>
+        <p class="page-subtitle">Pipeline y seguimiento de la expedición Oaxaca Infinita.</p>
+      </div>
+      <div class="heading-actions">
+        <button class="button button-muted" id="btnExportJson"><i class="ph ph-brackets-curly"></i> JSON</button>
+        <button class="button button-muted" id="btnExportCsv"><i class="ph ph-file-csv"></i> CSV</button>
+        <button class="button button-muted" id="btnRefresh"><i class="ph ph-arrows-clockwise"></i><span>Actualizar</span></button>
+      </div>
+    </section>
+
+    <section class="metrics" aria-label="Indicadores del pipeline">
+      <article class="metric">
+        <div class="metric-label">Pipeline bruto <i class="ph ph-wallet"></i></div>
+        <strong id="kpiPipeline">$0</strong>
+        <small id="kpiTotalLeads">0 oportunidades abiertas</small>
+      </article>
+      <article class="metric">
+        <div class="metric-label">Pipeline ponderado <i class="ph ph-chart-line-up"></i></div>
+        <strong id="kpiWeighted">$0</strong>
+        <small>Importe × probabilidad de cierre</small>
+      </article>
+      <article class="metric">
+        <div class="metric-label">Venta confirmada <i class="ph ph-check-circle"></i></div>
+        <strong id="kpiConfirmedAmount">$0</strong>
+        <small id="kpiConfirmedTickets">0 boletos confirmados</small>
+      </article>
+      <article class="metric">
+        <div class="metric-label">Seguimiento pendiente <i class="ph ph-clock-countdown"></i></div>
+        <strong id="kpiTasks">0</strong>
+        <small id="kpiConversion">0% conversión · 0 promos</small>
+      </article>
+    </section>
+
+    <section class="filters" aria-label="Búsqueda y filtros">
+      <label class="search-control"><i class="ph ph-magnifying-glass"></i><input id="searchInput" type="search" placeholder="Buscar nombre, correo, teléfono o canal…" autocomplete="off" /></label>
+      <select id="stageFilter" aria-label="Filtrar por etapa"><option value="ALL">Todas las etapas</option></select>
+      <select id="departureFilter" aria-label="Filtrar por salida">
+        <option value="ALL">Todas las salidas</option>
+        <option value="Salida 1 • Febrero">Salida 1 • Febrero</option>
+        <option value="Salida 2 • Abril">Salida 2 • Abril</option>
+        <option value="Salida 3 • Junio">Salida 3 • Junio</option>
+        <option value="Salida 4 • Septiembre">Salida 4 • Septiembre</option>
+        <option value="Salida 5 • Noviembre">Salida 5 • Noviembre</option>
+      </select>
+      <select id="promoFilter" aria-label="Filtrar por promoción">
+        <option value="ALL">Con y sin promoción</option>
+        <option value="yes">Promo 15% activa</option>
+        <option value="no">Sin promoción</option>
+      </select>
+      <label class="check-filter"><input id="pendingTasksFilter" type="checkbox" /> Tareas pendientes</label>
+      <div class="view-switch" role="group" aria-label="Vista de oportunidades">
+        <button class="view-button active" id="btnTableView" aria-pressed="true"><i class="ph ph-list-bullets"></i> Tabla</button>
+        <button class="view-button" id="btnBoardView" aria-pressed="false"><i class="ph ph-kanban"></i> Etapas</button>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <div class="records-panel">
+        <div class="panel-heading">
+          <div><h2>Prospectos</h2><span id="recordsCount">0 registros</span></div>
+          <span class="table-hint">Selecciona un prospecto para ver su expediente</span>
+        </div>
+        <div id="tableView" class="table-wrap">
+          <table>
+            <thead><tr><th>Prospecto</th><th>Etapa</th><th>Prob.</th><th>Importe</th><th>Ponderado</th><th>Salida / canal</th><th>Próxima acción</th></tr></thead>
+            <tbody id="leadsTableBody"></tbody>
+          </table>
+          <div id="emptyState" class="empty-state" hidden><strong>No hay prospectos para mostrar</strong><span>Prueba con otros filtros o registra una nueva oportunidad.</span></div>
+        </div>
+        <div id="boardView" class="kanban-board" hidden></div>
+      </div>
+
+      <aside class="detail-panel" aria-label="Detalle y seguimiento">
+        <div id="detailEmpty" class="detail-empty">
+          <span class="empty-icon"><i class="ph ph-identification-card"></i></span>
+          <h2>Expediente del prospecto</h2>
+          <p>Selecciona una fila para editar la oportunidad, consultar su cotización y organizar las próximas acciones.</p>
+          <button class="button button-primary" id="emptyCreateLead"><i class="ph ph-plus"></i> Registrar prospecto</button>
+        </div>
+        <form id="leadForm" class="lead-form" hidden>
+          <div class="detail-heading">
+            <div><p class="eyebrow">NUEVA OPORTUNIDAD</p><h2>Registrar prospecto</h2></div>
+            <button type="button" class="icon-button" id="btnCloseNewLead" aria-label="Cerrar formulario"><i class="ph ph-x"></i></button>
+          </div>
+          <div class="form-grid">
+            <label class="form-field full">Nombre completo<input name="name" required maxlength="120" autocomplete="name" placeholder="Nombre del prospecto" /></label>
+            <label class="form-field">Correo<input name="email" type="email" maxlength="160" autocomplete="email" placeholder="correo@ejemplo.mx" /></label>
+            <label class="form-field">Teléfono<input name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="55 1234 5678" /></label>
+            <label class="form-field">Boletos<input name="tickets" type="number" min="1" max="20" value="1" required /></label>
+            <label class="form-field">Salida<select name="departure">
+              <option>Salida 1 • Febrero</option><option>Salida 2 • Abril</option><option>Salida 3 • Junio</option><option>Salida 4 • Septiembre</option><option>Salida 5 • Noviembre</option>
+            </select></label>
+            <label class="form-field full">Fuente / canal<input name="source" maxlength="80" placeholder="Web, WhatsApp, Instagram…" /></label>
+            <label class="form-field full">Nota inicial<textarea name="notes" rows="3" placeholder="Contexto, intereses o siguiente paso"></textarea></label>
+          </div>
+          <div class="quote-preview" id="newQuotePreview"></div>
+          <div class="form-actions"><button type="button" class="button button-muted" id="btnCancelLead">Cancelar</button><button type="submit" class="button button-primary"><i class="ph ph-check"></i> Crear oportunidad</button></div>
+        </form>
+
+        <div id="leadDetail" class="lead-detail" hidden>
+          <div class="detail-heading">
+            <div><p class="eyebrow">EXPEDIENTE</p><h2 id="detailName">Prospecto</h2><span id="detailCreated" class="detail-meta"></span></div>
+            <button type="button" class="icon-button" id="btnCloseDetail" aria-label="Cerrar expediente"><i class="ph ph-x"></i></button>
+          </div>
+          <form id="editLeadForm">
+            <input type="hidden" name="id" />
+            <div class="form-grid">
+              <label class="form-field full">Nombre<input name="name" required maxlength="120" /></label>
+              <label class="form-field">Correo<input name="email" type="email" maxlength="160" /></label>
+              <label class="form-field">Teléfono<input name="phone" type="tel" maxlength="40" /></label>
+              <label class="form-field full">Fuente / canal<input name="source" maxlength="80" /></label>
+              <label class="form-field">Etapa<select name="stage" id="detailStage"></select></label>
+              <label class="form-field">Probabilidad %<input name="probability" type="number" min="0" max="100" step="1" /></label>
+              <label class="form-field">Salida<select name="departure">
+                <option>Salida 1 • Febrero</option><option>Salida 2 • Abril</option><option>Salida 3 • Junio</option><option>Salida 4 • Septiembre</option><option>Salida 5 • Noviembre</option>
+              </select></label>
+              <label class="form-field">Boletos<input name="tickets" type="number" min="1" max="20" value="1" required /></label>
+            </div>
+            <div class="quote-preview" id="detailQuote"></div>
+            <div class="form-actions"><button type="button" class="button button-danger" id="btnDeleteLead"><i class="ph ph-trash"></i> Eliminar</button><button type="submit" class="button button-primary"><i class="ph ph-floppy-disk"></i> Guardar</button></div>
+          </form>
+          <section class="detail-section">
+            <div class="section-title"><h3>Tareas y acciones</h3><span id="taskCount" class="count-pill">0</span></div>
+            <form id="taskForm" class="task-form">
+              <select name="type" aria-label="Tipo de tarea"><option>Llamada</option><option>WhatsApp</option><option>Enviar itinerario</option><option>Seguimiento promo 15%</option></select>
+              <input name="due_date" type="date" aria-label="Fecha límite" required />
+              <button class="button button-primary button-small" type="submit" aria-label="Agregar tarea"><i class="ph ph-plus"></i></button>
+            </form>
+            <ul id="taskList" class="task-list"></ul>
+          </section>
+          <section class="detail-section">
+            <div class="section-title"><h3>Bitácora</h3></div>
+            <form id="noteForm" class="note-form"><textarea name="note" rows="2" placeholder="Agregar nota de seguimiento…" required></textarea><button class="button button-muted button-small" type="submit">Agregar nota</button></form>
+            <ul id="notesList" class="notes-list"></ul>
+          </section>
+        </div>
+      </aside>
+    </section>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </main>
+  <script src="/js/crm-dashboard.js"></script>
+</body>
+</html>
